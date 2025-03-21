@@ -2,7 +2,7 @@
 
 ## 📌 Tổng quan  
 **Đồ án môn học:** Lập trình Ứng dụng Web - **NT208.P23.ANTT**  
-**Giáo viên hướng dẫn:** Trần Tuấn Dũng  
+**Giảng viên hướng dẫn:** Trần Tuấn Dũng  
 
 ### 👨‍💻 Thành viên nhóm  
 - **Võ Quốc Bảo** - 23520146  
