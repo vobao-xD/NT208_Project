@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ - Text to everything</title>
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Boldonse&family=Tektur:wght@400..900&display=swap" rel="stylesheet"></head>
+
+</head>
+<body>
+    <div class="full-container">
+        
+        <div class="sidebar">
+            <!-- context menu -->
+
+            <button class="back-button" onclick="goto_home()"><i class="fa fa-home"></i></button>
+            <heading class="sidebar_title">
+                <h2>Sidebar</h2>
+            </heading>
+            
+            <div class="choices">
+                <select class="options" name="options" id="">
+                    <option value="1">Text to Speech</option>
+                    <option value="2">Text to Image</option>
+                    <option value="3">Text to Video</option>
+                    <option value="4">Create AI Avatar</option>
+                    <option value="5">Improve Image Quality</option>
+                    <option value="6">AI Chatbox</option>
+                </select>
+                <button class="generate_btn" id="new-chat">+ Cuộc trò chuyện mới</button>
+            </div>
+            <div class="history">
+                <ul class="chat-list" id="chat-list" style="list-style: none;">
+                    Đoạn chat gần đây
+                    
+                </ul>
+            </div>
+        </div>
+        <div class="content">
+            <!-- HEADER -->
+            <div class="header_content">
+                <div class="fixed-button-container">
+                    <button class="fixed-button" onclick="goto_Advanced()">Advanced</button>
+                </div>
+
+                <div class="content_heading content-item">
+                    <i class="fa-solid fa-circle-user avatar"></i>
+                </div>
+            </div>
+            <!-- CONSERVATION  -->
+            <div class="conservation" id="conservation">
+                
+            </div>
+
+            <!-- INPUT USER  -->
+            <div class="footer_content">
+                <div id="btn_complex">
+                    <textarea class="input" name="" id="" rows="4" placeholder="Mô tả những gì bạn muốn tạo"></textarea>
+                    <button id="submit_btn" style="cursor: pointer;" type="submit">Create</button>    
+                </div>
+            </div> 
+
+        </div>
+    </div>
+    <script>
+
+document.getElementById("submit_btn").addEventListener("click", async function () {
+    const textarea = document.querySelector(".input");
+    const text = textarea.value.trim();
+    const selectedOption = document.querySelector(".options").value;
+    var chatbox=document.getElementById("conservation")
+
+    if (text === "") {
+        alert("Vui lòng nhập nội dung trước khi gửi."); 
+        return;
+}
+    var userMessage = document.createElement("div");
+    userMessage.className = "message user-message";
+    userMessage.innerText = text;
+    chatbox.appendChild(userMessage);
+    
+textarea.value="";
+
+    try {
+        let apiUrl;
+        let requestBody = {};
+
+
+
+    if (selectedOption === "1") { // Text to Speech
+        apiUrl = "http://localhost:8000/text-to-speech";
+        requestBody = {
+            text: text,
+            voice: "banmai",
+            speed: "0"
+        };
+
+    } else if (selectedOption === "2") { // Text to Image
+        apiUrl = "http://localhost:8000/text-to-image/quick";
+        requestBody = {
+            prompt: text,
+            steps: 0
+        };
+    } else {
+
+        alert("Tính năng này chưa được hỗ trợ!");
+        return;
+    }
+
+    const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) {
+        throw new Error(`Lỗi API (${response.status}): ${await response.text()}`);
+    }
+
+
+    const data = await response.json();
+    console.log("API Response:", data);
+
+    var botMessage = document.createElement("div");
+    botMessage.className = "message bot-message";
+
+
+if (selectedOption === "1") { // Xử lý Text to Speech (Âm thanh)
+    const audioURL = data.audio_url;
+    
+    if (audioURL) {
+        var audioElement = document.createElement("audio");
+        audioElement.controls = true;
+        audioElement.src = audioURL;
+        botMessage.appendChild(audioElement);
+    } else {
+        botMessage.innerText = "Không thể tạo audio!";
+    }
+
+} else if (selectedOption === "2") { // Xử lý Text to Image (Hình ảnh)
+    if (data.image_base64) {
+        var imageElement = document.createElement("img");
+        imageElement.src = "data:image/png;base64," + data.image_base64;
+        imageElement.style.maxWidth = "100%"; 
+        botMessage.appendChild(imageElement);
+    } else {
+        botMessage.innerText = "Không thể tạo hình ảnh!";
+    }
+} else {
+    botMessage.innerText = "Tính năng chưa được hỗ trợ!";
+}
+
+// Thêm bot message vào hộp chat
+chatbox.appendChild(botMessage);
+    } catch (error) {
+        console.error("Lỗi:", error);
+        alert("Có lỗi xảy ra khi gọi API: " + error.message);
+    }
+});
+
+// Ẩn nút play khi trang tải lại
+document.addEventListener("DOMContentLoaded", function () {
+    const playButton = document.getElementById("play_button");
+    if (playButton) playButton.style.display = "none";
+});
+
+    function goto_Advanced(){
+        window.location.href = "advanced.html";
+    }
+    function goto_home() {
+        window.location.href = "index.html";
+    }
+document.getElementById("new-chat").addEventListener("click", function () {
+    const chatList = document.getElementById("chat-list");
+
+    // Đếm số hội thoại hiện tại để đặt tên mới
+    const chatCount = chatList.querySelectorAll("li").length + 1;
+    const chatName = `Hội thoại ${chatCount}`;
+
+    // Tạo một phần tử <li>
+    const li = document.createElement("li");
+    li.classList.add("chat-item");
+    li.innerHTML = `
+        ${chatName}
+        <a href="#" class="options-btn" style="decoration:none ;color:white ; margin-left:130px">⋮</a>
+    `;
+
+    chatList.appendChild(li);
+});
+// Lắng nghe sự kiện click trên danh sách (Xử lý cả thẻ mới)
+    document.querySelector(".chat-list").addEventListener("click", function (event) {
+    let target = event.target;
+
+    // Chỉ xử lý khi click vào <li>
+    if (target.classList.contains("chat-item") && !target.classList.contains("selected")) {
+        target.classList.add("selected"); // Đánh dấu đã chọn
+    }
+});
+    </script>
+
+</body>
+</html>

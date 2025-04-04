@@ -1,73 +1,48 @@
-'use client';
-
-import { useState } from 'react';
-import { TextInputForm } from '@/components/TextInputForm';
-import { ConversionResult } from '@/components/ConversionResult';
-import { api, ConversionResponse } from '@/lib/api';
-import { toast } from 'react-hot-toast';
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
-  const [result, setResult] = useState<ConversionResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleConvert = async (data: {
-    text: string;
-    inputLanguage: string;
-    outputType: string;
-  }) => {
-    try {
-      setIsLoading(true);
-      const response = await api.convertText(data);
-      setResult(response);
-      toast.success('Conversion completed successfully!');
-    } catch (error) {
-      toast.error('Failed to convert text. Please try again.');
-      console.error('Conversion error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleShare = async () => {
-    if (!result) return;
-    
-    try {
-      await api.shareConversion(result.id, 'facebook');
-      toast.success('Shared successfully!');
-    } catch (error) {
-      toast.error('Failed to share. Please try again.');
-      console.error('Share error:', error);
-    }
-  };
-
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-12 px-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Text to Everything
-          </h1>
-          <p className="text-lg text-gray-600">
-            Convert your text into images, videos, and speech in Vietnamese or English
-          </p>
+    <main className="flex min-h-screen flex-col items-center justify-center p-8 text-center">
+      <div className="max-w-3xl space-y-6">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">
+          Text to Everything
+        </h1>
+        <p className="text-xl text-muted-foreground">
+          Transform your text into speech, images, and videos with ease. Experience the power of AI-driven conversions.
+        </p>
+        <div className="flex flex-col gap-4 sm:flex-row justify-center">
+          <Button asChild size="lg">
+            <Link href="/generate">
+              Start Converting
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="lg">
+            <Link href="/sign-in">
+              Sign In
+            </Link>
+          </Button>
         </div>
-        
-        <TextInputForm onSubmit={handleConvert} />
-        
-        {isLoading && (
-          <div className="text-center mt-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Converting your text...</p>
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-3 mt-16">
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Text to Speech</h2>
+            <p className="text-muted-foreground">
+              Convert your text into natural-sounding speech in multiple languages
+            </p>
           </div>
-        )}
-        
-        {result && !isLoading && (
-          <ConversionResult
-            type={result.type as 'image' | 'video' | 'speech'}
-            url={result.url}
-            onShare={handleShare}
-          />
-        )}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Text to Image</h2>
+            <p className="text-muted-foreground">
+              Generate stunning images from your text descriptions
+            </p>
+          </div>
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Text to Video</h2>
+            <p className="text-muted-foreground">
+              Create engaging videos from your text content
+            </p>
+          </div>
+        </div>
       </div>
     </main>
   );
